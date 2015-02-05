@@ -1,0 +1,105 @@
+//LIGHT DETECTION
+
+import android.app.Service;
+import android.content.Context;
+import android.content.Intent;
+import android.hardware.Sensor;
+import android.hardware.SensorEvent;
+import android.hardware.SensorEventListener;
+import android.hardware.SensorManager;
+import android.os.IBinder;
+import android.widget.Toast;
+
+
+
+public class LD extends Service implements SensorEventListener {
+	
+	static SensorManager S;
+	static Sensor L;
+
+
+	@Override
+	public IBinder onBind(Intent intent) {
+		// TODO Auto-generated method stub
+		return null;
+	}
+
+	@Override
+	public int onStartCommand(Intent intent, int flags, int startId) {
+		// TODO Auto-generated method stub
+		
+
+		S = (SensorManager) getSystemService(Context.SENSOR_SERVICE);
+		L = S.getDefaultSensor(Sensor.TYPE_LIGHT);
+
+		S.registerListener(this, L,SensorManager.SENSOR_DELAY_GAME);
+
+	
+
+		return super.onStartCommand(intent, flags, startId);
+	}
+
+	@Override
+	public void onSensorChanged(SensorEvent event) {
+		// TODO Auto-generated method stub
+
+		// Toast.makeText(LD.this, "LIGHT: " + event.values[0],
+		// Toast.LENGTH_SHORT)
+		// .show();
+		double v = Double.parseDouble(String.valueOf(event.values[0]));
+
+		Global global = (Global) getApplicationContext();
+		
+		// get phone state
+		String s = global.getVar1();
+		if(s == "Off Hook" || s == "Idle"){
+			
+			S.unregisterListener(this, L);
+			stopSelf();
+
+		}
+		// if no light
+		else if (v < 20.0) {
+				
+					Intent i = new Intent(LD.this,pre_PD.class);
+					startService(i);
+
+					// Toast.makeText(LD.this, "No Light and start pre_PD",
+					// Toast.LENGTH_SHORT)
+					// .show();
+					
+					S.unregisterListener(this, L);
+					stopSelf();
+
+		}
+		// if there's light start PD
+		else {
+
+				Intent i = new Intent(LD.this, PD.class);				
+				startService(i);
+
+				S.unregisterListener(this, L);
+				stopSelf();
+				
+		}
+
+	}
+
+	@Override
+	public void onAccuracyChanged(Sensor sensor, int accuracy) {
+		// TODO Auto-generated method stub
+
+	}
+
+/*	private boolean ServiceStatus(Class<?> serviceClass) {
+		ActivityManager manager = (ActivityManager) getSystemService(Context.ACTIVITY_SERVICE);
+		for (RunningServiceInfo service : manager
+				.getRunningServices(Integer.MAX_VALUE)) {
+			if (serviceClass.getName().equals(service.service.getClassName())) {
+				return true;
+			}
+		}
+		return false;
+	} */
+
+}
