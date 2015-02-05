@@ -1,0 +1,35 @@
+//GETTER & SETTER
+
+import android.app.Application;
+
+
+
+
+
+public class Global extends Application  {
+
+	private String Var1,Var2 = "";
+	
+
+	
+
+	
+
+	public String getVar1() {
+		return Var1;
+	}
+
+	public void setVar1(String var1) {
+		Var1 = var1;
+	}
+
+	public String getVar2() {
+		return Var2;
+	}
+
+	public void setVar2(String var2) {
+		Var2 = var2;
+	}
+
+		
+}
