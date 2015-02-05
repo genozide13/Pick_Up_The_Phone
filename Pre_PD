@@ -1,0 +1,113 @@
+//POCKET DETECTION
+
+
+import android.app.Service;
+import android.content.Context;
+import android.content.Intent;
+import android.hardware.Sensor;
+import android.hardware.SensorEvent;
+import android.hardware.SensorEventListener;
+import android.hardware.SensorManager;
+import android.os.IBinder;
+import android.widget.Toast;
+
+
+
+
+public class pre_PD extends Service implements SensorEventListener {
+
+	static SensorManager S;
+	static Sensor P;
+	
+
+	@Override
+	public IBinder onBind(Intent arg0) {
+		// TODO Auto-generated method stub
+		return null;
+	}
+
+	@Override
+	public int onStartCommand(Intent intent, int flags, int startId) {
+		// TODO Auto-generated method stub
+
+	//	Toast.makeText(pre_PD.this, "POCKET DETECTION",
+		//		Toast.LENGTH_SHORT).show();
+
+		S = (SensorManager) getSystemService(Context.SENSOR_SERVICE);
+		P = S.getDefaultSensor(Sensor.TYPE_PROXIMITY);
+
+		S.registerListener(this, P,
+				SensorManager.SENSOR_DELAY_GAME);
+
+
+		return super.onStartCommand(intent, flags, startId);
+	}
+
+	@Override
+	public void onSensorChanged(SensorEvent event) {
+		// TODO Auto-generated method stub
+		if (event.sensor.getType() == Sensor.TYPE_PROXIMITY) {
+
+			// Toast.makeText(PD.this, String.valueOf(event.values[0]),
+			// Toast.LENGTH_SHORT).show();
+
+			double v = Double.parseDouble(String.valueOf(event.values[0]));
+			Global global = (Global) getApplicationContext();
+
+			// get state
+			String s = global.getVar1();
+			if(s == "Off Hook" || s == "Idle"){
+				
+				S.unregisterListener(this, P);
+				stopSelf();
+
+			}
+			
+			else if (v > 0.0) {
+
+			
+					Toast.makeText(pre_PD.this, "Out of Pocket",
+							Toast.LENGTH_SHORT).show();
+
+					// start PD service
+					
+					Intent i = new Intent(pre_PD.this,PD.class);
+					startService(i);
+
+					
+					S.unregisterListener(this, P);
+					stopSelf();
+			}else if (v == 0.0) {
+
+				
+			//	Toast.makeText(pre_PD.this, "In Pocket",
+				//		Toast.LENGTH_SHORT).show();
+			}
+
+
+		}
+
+	}
+
+	@Override
+	public void onAccuracyChanged(Sensor sensor, int accuracy) {
+		// TODO Auto-generated method stub
+
+	}
+
+	protected void onResume() {
+		// Register a listener for the sensor.
+
+		S.registerListener(this, P,
+				SensorManager.SENSOR_DELAY_GAME);
+	}
+
+	protected void onPause() {
+		// Be sure to unregister the sensor when the activity pauses.
+
+		S.unregisterListener(this);
+	}
+
+
+
+}
